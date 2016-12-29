@@ -9,36 +9,49 @@ namespace AirlineInfo
     class PassengerService
     {
         //Select the desired action
-        public static void PassengerStart(List<Flights> flyingList)
+        public static void ActionWithPassenger(List<Flights> flyingList)
         {
             Dictionary<int, Action<List<Flights>>> choiseOperations = new Dictionary<int, Action<List<Flights>>>
             {
                 { 1, FindFlightsWithoutPass},
-                { 2, FindPassFlNumber},
-                { 3, FindPass}
+                { 2, FindPassTicketFlNumber},
+                { 3, FindPass},
+                { 4, ChangePassengers }
             };
 
             Console.WriteLine("Find flights without passengers = 1, or flight’s passengers = 2, find passengers by criteria = 3, change somthin in passenger=4");
 
-            int enterChoise = int.Parse(Console.ReadLine());
+            WorkWithDictionary(flyingList, choiseOperations);
+        }
 
-            if (choiseOperations.ContainsKey(enterChoise))
+        //One method is to work with dictionaries
+        private static void WorkWithDictionary(List<Flights> flyingList, Dictionary<int, Action<List<Flights>>> choiseOperations)
+        {
+            try
             {
-                choiseOperations[enterChoise](flyingList);
+                int enterChoise = int.Parse(Console.ReadLine());
+
+                if (choiseOperations.ContainsKey(enterChoise))
+                {
+                    choiseOperations[enterChoise](flyingList);
+                }
+            }
+            catch (FormatException)
+            {
+                Emergency.EmergencySituation();
             }
         }
 
         //method for print in console one Passenger
         public static void ShowOnePassOnFlight(List<Flights> flyingList, int count, int passCount)
         {
-            Console.WriteLine(flyingList[count].FlNumber + "\t" + flyingList[count].AircraftCapacity + "\t" + flyingList[count].Passengers[passCount].Birthday + "\t"
-                + flyingList[count].Passengers[passCount].FirstName + "\t" + flyingList[count].Passengers[passCount].SecondName + "\t"
-                + flyingList[count].Passengers[passCount].Nationality + "\t" + flyingList[count].Passengers[passCount].Passport + "\t"
-                + flyingList[count].Passengers[passCount].Sex + "\t" + flyingList[count].Passengers[passCount].Ticket.Price + "\t"
-                + flyingList[count].Passengers[passCount].Ticket.Type);
+            Console.WriteLine(flyingList[count].FlNumber + "\t" + flyingList[count].AircraftCapacity + "\t" + flyingList[count].Tickets[passCount].Passenger.Birthday + "\t"
+                + flyingList[count].Tickets[passCount].Passenger.FirstName + "\t" + flyingList[count].Tickets[passCount].Passenger.SecondName + "\t"
+                + flyingList[count].Tickets[passCount].Passenger.Nationality + "\t" + flyingList[count].Tickets[passCount].Passenger.Passport + "\t"
+                + flyingList[count].Tickets[passCount].Passenger.Sex + "\t" + flyingList[count].Tickets[passCount].Passenger.Ticket.Price + "\t"
+                + flyingList[count].Tickets[passCount].Passenger.Ticket.Type);
         }
 
-        // method for add passengers
         public static Passenger AddPassenger(List<Flights> flyingList, string enterFlNumber)
         {
             Console.WriteLine("Enter FirstName of Passenger");
@@ -74,53 +87,117 @@ namespace AirlineInfo
             return pas;
         }
 
-        //method for change somthin in passenger
+        //method for choose what we will change in passenger
         private static void ChangePassengers(List<Flights> flyingList)
         {
             Dictionary<int, Action<List<Flights>>> choiseOperations = new Dictionary<int, Action<List<Flights>>>
             {
-                { 1, ChangeName},
-                { 2, ChangeNationality},
-                { 3, ChangePassport},
-                { 4, ChangeBirthday},
-                { 5, ChangeSex},
-                { 6, ChangeTicket}
+                { 1, FindPasName},
+                { 2, FindPasNationality},
+                { 3, FindPasPassport},
+                { 4, FindPasSex},
+                { 5, FindPassTicketFlNumber}
             };
 
-            Console.WriteLine("Enter What you change FirstName or SecondName - 1, Nationality - 2, Passport - 3, Birthday - 4, Sex - 5, Ticket - 6");
+            Console.WriteLine("Enter What you change FirstName or SecondName - 1, Nationality - 2, Passport - 3, Sex - 4, Ticket - 5");
 
-            int enterChoise = int.Parse(Console.ReadLine());
-
-            if (choiseOperations.ContainsKey(enterChoise))
-            {
-                choiseOperations[enterChoise](flyingList);
-            }
-
-            ChangeName(flyingList);
+            WorkWithDictionary(flyingList, choiseOperations);
         }
 
-        //method for change Ticket
-        private static void ChangeTicket(List<Flights> flyingList)
+        //methods for find Passenger by criteria
+        private static void FindPass(List<Flights> flyingList)
         {
-            Console.WriteLine("Enter Ticket FlNumber to change");
+            Dictionary<int, Action<List<Flights>>> choiseOperations = new Dictionary<int, Action<List<Flights>>>
+            {
+                { 1, FindPasName},
+                { 2, FindPassTicketFlNumber},
+                { 3, FindPasPassport}
+            };
+
+            Console.WriteLine("Enter criteria for search First name or last name - 1,  Flight number - 2, Passport number - 3");
+
+            WorkWithDictionary(flyingList, choiseOperations);
+        }
+
+        private static void FindPassTicketFlNumber(List<Flights> flyingList)
+        {
+            Console.WriteLine("Enter Ticket FlNumber");
             string enterTicket = Console.ReadLine();
 
             for (int i = 0; i < flyingList.Capacity; i++)
             {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
+                for (int j = 0; j < flyingList[i].Tickets.Length; j++)
                 {
-                    if (flyingList[i].Passengers[j].Ticket.FlNumber == enterTicket)
+                    Console.WriteLine("Do you whant to change FlNumber Passenger - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
                     {
-                        Console.WriteLine("Enter new Ticket FlNumber");
-                        string enterNewTicket = Console.ReadLine().ToUpper();
-                        if (flyingList[i].FlNumber == enterNewTicket)
+                        if (flyingList[i].Tickets[j].FlNumber == enterTicket)
                         {
-                            var temp = flyingList.ToArray()[i];
-                            temp.Passengers[j].Ticket = TicketService.AddPassengerTicket(flyingList, enterTicket);
+                            ChangePassTicketFlNumber(flyingList, i, j);
+                        }
+                    }
+                    else
+                    {
+                        ShowOnePassOnFlight(flyingList, i, j);
+                    }
+                }
+            }
+        }
 
-                            flyingList.RemoveAt(i);
-                            flyingList.Insert(i, temp);
+        private static void FindPasSex(List<Flights> flyingList)
+        {
+            Console.WriteLine("Enter Sex to change");
+            Sex enterSex = (Sex)Enum.Parse(typeof(Sex), Console.ReadLine());
 
+            for (int i = 0; i < flyingList.Capacity; i++)
+            {
+                for (int j = 0; j < flyingList[i].Tickets.Length; j++)
+                {
+                    if (flyingList[i].Tickets[j].Passenger.Sex == enterSex)
+                    {
+                        ChangePasSex(flyingList, enterSex, i, j);
+                    }
+                }
+            }
+        }
+
+        private static void FindPasBirthday(List<Flights> flyingList)
+        {
+            Console.WriteLine("Do you whant to change Birthday Passenger - yes 1; no 2");
+            int enterChoise = int.Parse(Console.ReadLine());
+            if (enterChoise == 1)
+            {
+                for (int i = 0; i < flyingList.Capacity; i++)
+                {
+                    for (int j = 0; j < flyingList[i].Tickets.Length; j++)
+                    {
+                        ChangePasBirthday(flyingList, i, j);
+                    }
+                }
+            }
+        }
+
+        private static void FindPasPassport(List<Flights> flyingList)
+        {
+            Console.WriteLine("Enter a Passport number");
+            string enterPassport = Console.ReadLine();
+
+            for (int i = 0; i < flyingList.Capacity; i++)
+            {
+                for (int j = 0; j < flyingList[i].Tickets.Length; j++)
+                {
+                    if (flyingList[i].Tickets[j].Passenger.Passport == enterPassport)
+                    {
+                        Console.WriteLine("Do you whant to change Passport number - yes 1; no 2");
+                        int enterChoise = int.Parse(Console.ReadLine());
+                        if (enterChoise == 1)
+                        {
+                            ChangePasPassport(flyingList, enterPassport, i, j);
+                            break;
+                        }
+                        else
+                        {
                             ShowOnePassOnFlight(flyingList, i, j);
                         }
                     }
@@ -128,89 +205,7 @@ namespace AirlineInfo
             }
         }
 
-        //method for change Sex
-        private static void ChangeSex(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter Sex to change");
-            Sex enterSex = (Sex)Enum.Parse(typeof(Sex), Console.ReadLine());
-
-            for (int i = 0; i < flyingList.Capacity; i++)
-            {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
-                {
-                    if (flyingList[i].Passengers[j].Sex == enterSex)
-                    {
-                        Console.WriteLine("Enter new Sex");
-                        string enterNewName = Console.ReadLine().ToUpper();
-
-                        var temp = flyingList.ToArray()[i];
-                        temp.Passengers[j].Sex = enterSex;
-
-                        flyingList.RemoveAt(i);
-                        flyingList.Insert(i, temp);
-
-                        ShowOnePassOnFlight(flyingList, i, j);
-                    }
-                }
-            }
-        }
-
-        //method for change Birthday
-        private static void ChangeBirthday(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter a editable Birthday");
-            DateTime enterBirthday = DateTime.Parse(Console.ReadLine());
-
-            for (int i = 0; i < flyingList.Capacity; i++)
-            {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
-                {
-                    if (flyingList[i].Passengers[j].Birthday == enterBirthday)
-                    {
-                        Console.WriteLine("Enter new Birthday");
-                        string enterNewName = Console.ReadLine().ToUpper();
-
-                        var temp = flyingList.ToArray()[i];
-                        temp.Passengers[j].Birthday = enterBirthday;
-
-                        flyingList.RemoveAt(i);
-                        flyingList.Insert(i, temp);
-
-                        ShowOnePassOnFlight(flyingList, i, j);
-                    }
-                }
-            }
-        }
-
-        //method for change Passport
-        private static void ChangePassport(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter a editable Passport");
-            string enterPassport = Console.ReadLine();
-
-            for (int i = 0; i < flyingList.Capacity; i++)
-            {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
-                {
-                    if (flyingList[i].Passengers[j].Passport == enterPassport)
-                    {
-                        Console.WriteLine("Enter new Passport");
-                        string enterNewName = Console.ReadLine().ToUpper();
-
-                        var temp = flyingList.ToArray()[i];
-                        temp.Passengers[j].Passport = enterPassport;
-
-                        flyingList.RemoveAt(i);
-                        flyingList.Insert(i, temp);
-
-                        ShowOnePassOnFlight(flyingList, i, j);
-                    }
-                }
-            }
-        }
-
-        //method for change Nationality
-        private static void ChangeNationality(List<Flights> flyingList)
+        private static void FindPasNationality(List<Flights> flyingList)
         {
             Console.WriteLine("Enter Nationality to change");
             Nationality enterNationality = (Nationality)Enum.Parse(typeof(Nationality), Console.ReadLine());
@@ -219,20 +214,11 @@ namespace AirlineInfo
             {
                 for (int i = 0; i < flyingList.Capacity; i++)
                 {
-                    for (int j = 0; j < flyingList[i].Passengers.Length; j++)
+                    for (int j = 0; j < flyingList[i].Tickets.Length; j++)
                     {
-                        if (flyingList[i].Passengers[j].Nationality == enterNationality)
+                        if (flyingList[i].Tickets[j].Passenger.Nationality == enterNationality)
                         {
-                            Console.WriteLine("Enter new Nationality");
-                            string enterNewName = Console.ReadLine().ToUpper();
-
-                            var temp = flyingList.ToArray()[i];
-                            temp.Passengers[j].Nationality = enterNationality;
-
-                            flyingList.RemoveAt(i);
-                            flyingList.Insert(i, temp);
-
-                            ShowOnePassOnFlight(flyingList, i, j);
+                            ChangePasNationality(flyingList, enterNationality, i, j);
                         }
                     }
                 }
@@ -243,57 +229,138 @@ namespace AirlineInfo
             }
         }
 
-        //method for choose what we will change FirstName or SecondName
-        private static void ChangeName(List<Flights> flyingList)
+        private static void FindPasName(List<Flights> flyingList)
         {
-            Console.WriteLine("Enter FirstName or SecondName to change");
+            Console.WriteLine("Enter FirstName or SecondName");
             string enterName = Console.ReadLine();
 
             for (int i = 0; i < flyingList.Capacity; i++)
             {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
+                for (int j = 0; j < flyingList[i].Tickets.Length; j++)
                 {
-                    if (flyingList[i].Passengers[j].FirstName == enterName)
+                    Console.WriteLine("Do you whant to change FirstName or SecondName or Birthday Passenger - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
                     {
-                        ChangeFirstName(flyingList, i, j);
-                    }
+                        if (flyingList[i].Tickets[j].Passenger.FirstName == enterName)
+                        {
+                            ChangePasFirstName(flyingList, i, j);
+                            FindPasBirthday(flyingList);
+                        }
 
-                    else if (flyingList[i].Passengers[j].SecondName == enterName)
+                        else if (flyingList[i].Tickets[j].Passenger.SecondName == enterName)
+                        {
+                            ChangePasSecondName(flyingList, i, j);
+                            FindPasBirthday(flyingList);
+                        }
+                    }
+                    else
                     {
-                        ChangeSecondName(flyingList, i, j);
+                        ShowOnePassOnFlight(flyingList, i, j);
                     }
                 }
             }
         }
 
-        //method for change FirstName 
-        private static void ChangeFirstName(List<Flights> flyingList, int count, int passCount)
+        //methods for change Passenger by selected criteria
+        private static void ChangePassTicketFlNumber(List<Flights> flyingList, int i, int j)
+        {
+            Console.WriteLine("Enter new Ticket FlNumber");
+            string enterNewTicketFlNumber = Console.ReadLine().ToUpper();
+            if (flyingList[i].FlNumber == enterNewTicketFlNumber)
+            {
+                var temp = flyingList.ToArray()[i];
+                temp.Tickets[j].FlNumber = enterNewTicketFlNumber;
+
+                flyingList.RemoveAt(i);
+                flyingList.Insert(i, temp);
+
+                ShowOnePassOnFlight(flyingList, i, j);
+            }
+        }
+
+        private static void ChangePasSex(List<Flights> flyingList, Sex enterSex, int i, int j)
+        {
+            Console.WriteLine("Enter new Sex");
+            string enterNewName = Console.ReadLine().ToUpper();
+
+            var temp = flyingList.ToArray()[i];
+            temp.Tickets[j].Passenger.Sex = enterSex;
+
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
+
+            ShowOnePassOnFlight(flyingList, i, j);
+        }
+
+        private static void ChangePasBirthday(List<Flights> flyingList, int i, int j)
+        {
+            Console.WriteLine("Enter new Birthday");
+            DateTime enterBirthday = DateTime.Parse(Console.ReadLine());
+
+            var temp = flyingList.ToArray()[i];
+            temp.Tickets[j].Passenger.Birthday = enterBirthday;
+
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
+
+            ShowOnePassOnFlight(flyingList, i, j);
+        }
+
+        private static void ChangePasPassport(List<Flights> flyingList, string enterPassport, int i, int j)
+        {
+            Console.WriteLine("Enter new Passport");
+            string enterNewName = Console.ReadLine().ToUpper();
+
+            var temp = flyingList.ToArray()[i];
+            temp.Tickets[j].Passenger.Passport = enterPassport;
+
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
+
+            ShowOnePassOnFlight(flyingList, i, j);
+        }
+
+        private static void ChangePasNationality(List<Flights> flyingList, Nationality enterNationality, int i, int j)
+        {
+            Console.WriteLine("Enter new Nationality");
+            string enterNewName = Console.ReadLine().ToUpper();
+
+            var temp = flyingList.ToArray()[i];
+            temp.Tickets[j].Passenger.Nationality = enterNationality;
+
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
+
+            ShowOnePassOnFlight(flyingList, i, j);
+        }
+
+        private static void ChangePasFirstName(List<Flights> flyingList, int count, int ticketCount)
         {
             Console.WriteLine("Enter new FirstName");
             string enterNewName = Console.ReadLine().ToUpper();
 
             var temp = flyingList.ToArray()[count];
-            temp.Passengers[passCount].FirstName = enterNewName;
+            temp.Tickets[ticketCount].Passenger.FirstName = enterNewName;
 
             flyingList.RemoveAt(count);
             flyingList.Insert(count, temp);
 
-            ShowOnePassOnFlight(flyingList, count, passCount);
+            ShowOnePassOnFlight(flyingList, count, ticketCount);
         }
 
-        //method for change SecondName
-        private static void ChangeSecondName(List<Flights> flyingList, int count, int passCount)
+        private static void ChangePasSecondName(List<Flights> flyingList, int count, int ticketCount)
         {
             Console.WriteLine("Enter new SecondName");
             string enterNewName = Console.ReadLine().ToUpper();
 
             var temp = flyingList.ToArray()[count];
-            temp.Passengers[passCount].SecondName = enterNewName;
+            temp.Tickets[ticketCount].Passenger.SecondName = enterNewName;
 
             flyingList.RemoveAt(count);
             flyingList.Insert(count, temp);
 
-            ShowOnePassOnFlight(flyingList, count, passCount);
+            ShowOnePassOnFlight(flyingList, count, ticketCount);
         }
 
         //method for find flights without passengers
@@ -301,83 +368,9 @@ namespace AirlineInfo
         {
             for (int i = 0; i < flyingList.Capacity; i++)
             {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
+                for (int j = 0; j < flyingList[i].Tickets.Length; j++)
                 {
-                    if (flyingList[i].Passengers == null)
-                    {
-                        ShowOnePassOnFlight(flyingList, i, j);
-                    }
-                }
-            }
-        }
-
-        //method for find passengers on flight 
-        private static void FindPassFlNumber(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter FlNumber");
-            string enterFlNumber = Console.ReadLine().ToUpper();
-
-            for (int i = 0; i < flyingList.Capacity; i++)
-            {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
-                {
-                    if (flyingList[i].FlNumber == enterFlNumber && flyingList[i].Passengers == null)
-                    {
-                        ShowOnePassOnFlight(flyingList, i, j);
-                    }
-                }
-            }
-        }
-
-        // method for find passengers by criteria
-        private static void FindPass(List<Flights> flyingList)
-        {
-            Dictionary<int, Action<List<Flights>>> choiseOperations = new Dictionary<int, Action<List<Flights>>>
-            {
-                { 1, FindPassName},
-                { 2, FindPassFlNumber},
-                { 3, FindPassport}
-            };
-
-            Console.WriteLine("Enter criteria for search First name or last name - 1,  Flight number - 2, Passport number - 3");
-
-            int enterChoise = int.Parse(Console.ReadLine());
-
-            if (choiseOperations.ContainsKey(enterChoise))
-            {
-                choiseOperations[enterChoise](flyingList);
-            }
-        }
-
-        // method for find passengers by first name or last name
-        private static void FindPassName(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter First name or last name");
-            string enterName = Console.ReadLine();
-
-            for (int i = 0; i < flyingList.Capacity; i++)
-            {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
-                {
-                    if (flyingList[i].Passengers[j].FirstName == enterName || flyingList[i].Passengers[j].SecondName == enterName)
-                    {
-                        ShowOnePassOnFlight(flyingList, i, j);
-                    }
-                }
-            }
-        }
-
-        // method for find passengers by Passport
-        private static void FindPassport(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter number of Passport");
-            string enterPassport = Console.ReadLine();
-
-            for (int i = 0; i < flyingList.Capacity; i++)
-            {
-                for (int j = 0; j < flyingList[i].Passengers.Length; j++)
-                {
-                    if (flyingList[i].Passengers[j].Passport == enterPassport)
+                    if (flyingList[i].Tickets[j].Passenger == null)
                     {
                         ShowOnePassOnFlight(flyingList, i, j);
                     }

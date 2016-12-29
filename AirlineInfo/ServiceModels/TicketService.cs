@@ -18,7 +18,7 @@ namespace AirlineInfo
             {
                 FlNumber = enterFlNumber,
                 Type = enterClass,
-                Price = Price(flyingList, enterFlNumber)
+                Price = Price(flyingList, enterFlNumber, enterClass)
             };
             return ticPas;
         }
@@ -28,85 +28,108 @@ namespace AirlineInfo
         {
             for (int i = 0; i < flyingList.Count; i++)
             {
-                flyingList[i].Tickets = new Ticket[flyingList[i].AircraftCapacity];
+                var flyingListItem = flyingList[i];
+                flyingListItem.Tickets = new Ticket[flyingListItem.AircraftCapacity];
 
-                int business = (int)(flyingList[i].AircraftCapacity * 0.2);
-                int economy = flyingList[i].AircraftCapacity - business;
+                int businessTicketsCount = (int)(flyingListItem.AircraftCapacity * 0.2);
+                int economyTicketsCount = flyingListItem.AircraftCapacity - businessTicketsCount;
 
-                FillTicketBusiness(flyingList, i, business);
-                FillTicketEconomy(flyingList, i, business, economy);
+                FillTicket(flyingListItem, businessTicketsCount, economyTicketsCount);
+            }
+        }
+        
+        //combined  version FillTicketEconomy and FillTicketBusiness
+        private static void FillTicket(Flights flyingListItem, int businessTicketsCount, int economyTicketsCount)
+        {
+            for (int j = 0; j < flyingListItem.Tickets.Length; j++)
+            {
+                if (j <= businessTicketsCount)
+                {
+                    flyingListItem.Tickets[j] =
+                        new Ticket
+                        {
+                            Type = TicketClass.Business,
+                            Price = flyingListItem.AircraftCapacity * 3,
+                            Quantity = businessTicketsCount,
+                            FlNumber = flyingListItem.FlNumber,
+                            Passenger = null
+                        };
+                }
+                else
+                {
+                    flyingListItem.Tickets[j] = new Ticket
+                    {
+                        Type = TicketClass.Economy,
+                        Price = flyingListItem.AircraftCapacity * 1.5,
+                        Quantity = economyTicketsCount,
+                        FlNumber = flyingListItem.FlNumber,
+                        Passenger = null
+                    };
+                }
+            }
+        }
+
+        //add existin passenger from passList in our flight
+        public static void AddExistPass(List<Flights> flyingList, List<Passenger> passList)
+        {
+            for (int i = 0; i < flyingList.Count; i++)
+            {
+                for (int j = 0; j < flyingList[i].Tickets.Length; j++)
+                {
+                    for (int k = 0; k < passList.Count; k++)
+                    {
+                        if (passList[k].Ticket.FlNumber== flyingList[i].Tickets[j].FlNumber&& passList[k].Ticket.Type == flyingList[i].Tickets[j].Type)
+                        {
+                            flyingList[i].Tickets[j].Passenger = passList[k];
+                        }
+                    }
+                }
+            }
+        }
+        
+        public static void AddPassengerInFlight(List<Flights> flyingList)
+        {
+            Console.WriteLine("Enter flight for add passenger");
+            string enterFlNumber = Console.ReadLine().ToUpper();
+
+            for (int i = 0; i < flyingList.Count; i++)
+            {
+                if (flyingList[i].FlNumber == enterFlNumber)
+                {
+                    for (int j = 0; i < flyingList[i].Tickets.Length; j++)
+                    {
+                        if (flyingList[i].Tickets[j].Passenger == null)
+                        {
+                            flyingList[i].Tickets[j].Passenger = PassengerService.AddPassenger(flyingList, enterFlNumber);
+                        }
+                    }
+                }
             }
         }
 
         // method for take price
-        public static double Price(List<Flights> flyingList, string enterFlNumber)
+        public static double Price(List<Flights> flyingList, string enterFlNumber, TicketClass enterClass)
         {
             double price = 0;
             for (int i = 0; i < flyingList.Count; i++)
             {
                 if (flyingList[i].FlNumber == enterFlNumber)
                 {
+                    /*initial version was "not comprehended until the end." 
+                    Price is assigned depending on the class + tickets array that would get to the properties 
+                    of a particular element has entered the second bust              
+                    */
                     for (int j = 0; j < flyingList[i].Tickets.Length; j++)
                     {
-                        price = flyingList[i].Tickets[j].Price;
+                        if (flyingList[i].Tickets[j].Type == enterClass)
+                        {
+                            price = flyingList[i].Tickets[j].Price;
+                            break;
+                        }                        
                     }
-
                 }
             }
             return price;
-        }
-
-        // method for fill economy ticket array
-        private static void FillTicketEconomy(List<Flights> flyingList, int i, int business, int economy)
-        {
-            for (int j = business; j < flyingList[i].Tickets.Length; j++)
-            {
-                flyingList[i].Tickets[j] = new Ticket
-                {
-                    Type = TicketClass.Economy,
-                    Price = flyingList[i].AircraftCapacity * 1.5,
-                    Quantity = economy,
-                    FlNumber = flyingList[i].FlNumber
-                };
-                IsTicketsFree(flyingList, i, j);
-            }
-        }
-
-        // method for fill business ticket array
-        private static void FillTicketBusiness(List<Flights> flyingList, int i, int business)
-        {
-            for (int j = 0; j < business; j++)
-            {
-                flyingList[i].Tickets[j] = new Ticket
-                {
-                    Type = TicketClass.Business,
-                    Price = flyingList[i].AircraftCapacity * 3,
-                    Quantity = business,
-                    FlNumber = flyingList[i].FlNumber
-                };
-                IsTicketsFree(flyingList, i, j);
-            }
-        }
-
-        // method for fill ticket array of free or occupied tickets
-        private static void IsTicketsFree(List<Flights> flyingList, int i, int j)
-        {
-            if (flyingList[i].Passengers == null)
-            {
-                flyingList[i].Tickets[j].IsFree = true;
-            }
-            else
-            {
-                for (int k = 0; k < flyingList[i].Passengers.Length; k++)
-                {
-                    flyingList[i].Tickets[j].IsFree = false;
-                }
-
-                for (int k = flyingList[i].Passengers.Length; k < flyingList[i].Tickets.Length; k++)
-                {
-                    flyingList[i].Tickets[j].IsFree = true;
-                }
-            }
         }
     }
 }

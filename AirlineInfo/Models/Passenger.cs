@@ -15,6 +15,5 @@ namespace AirlineInfo
         public DateTime Birthday { get; set; }
         public Sex Sex { get; set; }       
         public Ticket Ticket { get; set; }    
-
     }
 }

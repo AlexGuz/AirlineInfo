@@ -9,7 +9,7 @@ namespace AirlineInfo
     class FlightsService
     {
         //method for choose what we do
-        public static void StartFlights(List<Flights> flyingList)
+        public static void ActionWithFlights(List<Flights> flyingList)
         {
             while (true)
             {
@@ -56,13 +56,19 @@ namespace AirlineInfo
                 { 2, DeleteFlight },
                 { 3, FindFlight },
                 { 4, FindNearestFlight },
-                { 5, ChangeFlight },
-                { 6, AddPassengerInFlight },
-                { 7, PassengerService.PassengerStart }
+                { 5, TicketService.AddPassengerInFlight },
+                { 6, PassengerService.ActionWithPassenger }
             };
 
             Console.WriteLine("Do you whant add new flight - 1 or delete flight - 2? Find a flight on the specified parameters - 3, Find the nearest flight - 4" +
-                "change somthin in list - 5? add new passenger in list - 6, find somthin in passenger list - 7");
+                "add new passenger in list - 5, find somthin in passenger list - 6");
+
+            WorkWithDictionary(flyingList, choiseOperations);
+        }
+
+        //One method is to work with dictionaries
+        private static void WorkWithDictionary(List<Flights> flyingList, Dictionary<int, Action<List<Flights>>> choiseOperations)
+        {
             try
             {
                 int enterChoise = int.Parse(Console.ReadLine());
@@ -139,7 +145,6 @@ namespace AirlineInfo
                 Town = townChoice,
                 Gate = gateChoise,
                 AircraftCapacity = enterAircraftCapacity,
-                Passengers = new Passenger[enterAircraftCapacity],
                 Tickets = new Ticket[enterAircraftCapacity]
             });
 
@@ -148,28 +153,7 @@ namespace AirlineInfo
             ShowFlight(flyingList, enterType);
         }
 
-        //method to add passengers in flight
-        private static void AddPassengerInFlight(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter flight for add passenger");
-            string enterFlNumber = Console.ReadLine().ToUpper();
-
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-                if (flyingList[i].FlNumber == enterFlNumber)
-                {
-                    for (int j = 0; i < flyingList[i].Passengers.Length; i++)
-                    {
-                        if (flyingList[i].Passengers[j] == null)
-                        {
-                            flyingList[i].Passengers[j] = PassengerService.AddPassenger(flyingList, enterFlNumber);
-                        }
-                    }
-                }
-            }
-        }
-
-        //method for choose a new Terminal
+        //methods for choose a new property for Flight
         private static Terminal ChooseTerminal()
         {
             Console.WriteLine("Enter Terminal TerminalA - 1, TerminalB - 2, TerminalC - 3, TerminalD - 4, TerminalF - 5, unknown - default- 0");
@@ -186,7 +170,6 @@ namespace AirlineInfo
             return terminalChoise;
         }
 
-        //method for choose a new FlStatus for arrival List
         private static FlStatus ChooseFlStatusArrival()
         {
             Dictionary<int, FlStatus> choiseOperations = new Dictionary<int, FlStatus>
@@ -218,7 +201,6 @@ namespace AirlineInfo
             return flStatusChoise;
         }
 
-        //method for choose a new FlStatus for departures List
         private static FlStatus ChooseFlStatusDepartures()
         {
             Dictionary<int, FlStatus> choiseOperations = new Dictionary<int, FlStatus>
@@ -250,7 +232,6 @@ namespace AirlineInfo
             return flStatusChoise;
         }
 
-        //method for choose a new Gate
         private static Gate ChooseGate()
         {
             Console.WriteLine("Enter gate Gate1 - 1, Gate2 - 2, Gate3 - 3, Gate4 - 4, Gate5 - 5, Gate6 - 6, Gate7 - 7 , Gate8 - 8 , Gate9 - 9, unknown - default - 0");
@@ -267,7 +248,6 @@ namespace AirlineInfo
             return gateChoise;
         }
 
-        //method for delete element of the list
         private static void DeleteFlight(List<Flights> flyingList)
         {
             Console.WriteLine("Do you whant delete  arrival - 1 or departures - 2");
@@ -287,7 +267,6 @@ namespace AirlineInfo
             ShowFlight(flyingList, enterType);
         }
 
-        // method for searching elements of the List
         private static void FindFlight(List<Flights> flyingList)
         {
             Dictionary<int, Action<List<Flights>>> choiseOperations = new Dictionary<int, Action<List<Flights>>>
@@ -302,22 +281,10 @@ namespace AirlineInfo
             };
             Console.WriteLine("Enter what you want to find Time - 1, FlNumber - 2, Town - 3, Company - 4, Terminal - 5, FlStatus - 6, Gate - 7");
 
-            try
-            {
-                int findNumber = int.Parse(Console.ReadLine());
-
-                if (choiseOperations.ContainsKey(findNumber))
-                {
-                    choiseOperations[findNumber](flyingList);
-                }
-            }
-            catch (Exception)
-            {
-                Emergency.EmergencySituation();
-            }
+            WorkWithDictionary(flyingList, choiseOperations);
         }
 
-        // method for searching Gate in element of the List
+        // methods for searching Flight by selected criteria
         private static void FindFlightGate(List<Flights> flyingList)
         {
             Console.WriteLine("Enter Gate ");
@@ -328,8 +295,18 @@ namespace AirlineInfo
             {
                 if (flyingList[i].Gate == enterGate)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change Gate - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightGate(flyingList, i);
+                    }
+
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
                 if (notFind)
                 {
@@ -338,7 +315,6 @@ namespace AirlineInfo
             }
         }
 
-        // method for searching flStatus in element of the List
         private static void FindFlightFlStatus(List<Flights> flyingList)
         {
             Console.WriteLine("Enter flStatus ");
@@ -349,8 +325,17 @@ namespace AirlineInfo
             {
                 if (flyingList[i].FlStatus == enterFlStatus)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change FlStatus - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightFlStatus(flyingList, i);
+                    }
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
                 if (notFind)
                 {
@@ -359,7 +344,6 @@ namespace AirlineInfo
             }
         }
 
-        // method for searching Terminal in element of the List
         private static void FindFlightTerminal(List<Flights> flyingList)
         {
             Console.WriteLine("Enter Terminal ");
@@ -370,8 +354,17 @@ namespace AirlineInfo
             {
                 if (flyingList[i].Terminal == enterTerminal)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change Terminal - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightTerminal(flyingList, i);
+                    }
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
                 if (notFind)
                 {
@@ -391,8 +384,17 @@ namespace AirlineInfo
             {
                 if (flyingList[i].Company == enterCompany)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change Company - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightCompany(flyingList, i);
+                    }
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
                 if (notFind)
                 {
@@ -401,7 +403,6 @@ namespace AirlineInfo
             }
         }
 
-        // method for searching Town in element of the List
         private static void FindFlightTown(List<Flights> flyingList)
         {
             Console.WriteLine("Enter Town ");
@@ -412,8 +413,17 @@ namespace AirlineInfo
             {
                 if (flyingList[i].Town == enterTown)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change Town - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightTown(flyingList, i);
+                    }
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
                 if (notFind)
                 {
@@ -433,8 +443,17 @@ namespace AirlineInfo
             {
                 if (flyingList[i].FlNumber == enterFlNumber)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change FlNumber - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightFlNumber(flyingList, i);
+                    }
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
                 if (notFind)
                 {
@@ -443,7 +462,6 @@ namespace AirlineInfo
             }
         }
 
-        // method for searching Time in element of the List
         private static void FindFlightTime(List<Flights> flyingList)
         {
             Console.WriteLine("Enter Time in format yyyy-MM-dd HH:mm");
@@ -455,8 +473,17 @@ namespace AirlineInfo
 
                 if (flyingList[i].Time == enterTime)
                 {
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
+                    Console.WriteLine("Do you whant to change FlNumber - yes 1; no 2");
+                    int enterChoise = int.Parse(Console.ReadLine());
+                    if (enterChoise == 1)
+                    {
+                        ChangeFlightTime(flyingList, i);
+                    }
+                    else
+                    {
+                        ShowOneFlight(flyingList, i);
+                        notFind = false;
+                    }
                 }
 
                 if (notFind)
@@ -466,245 +493,102 @@ namespace AirlineInfo
             }
         }
 
-        //  method for changing elements of the List
-        private static void ChangeFlight(List<Flights> flyingList)
+        // methods for change Flight by selected criteria
+        private static void ChangeFlightGate(List<Flights> flyingList, int i)
         {
-            Dictionary<int, Action<List<Flights>>> choiseOperations = new Dictionary<int, Action<List<Flights>>>
-            {
-                { 1, ChangeFlightTime },
-                { 2, ChangeFlightFlNumber },
-                { 3, ChangeFlightTown },
-                { 4, ChangeFlightCompany },
-                { 5, ChangeFlightTerminal },
-                { 6, ChangeFlightFlStatus },
-                { 7, ChangeFlightGate }
-            };
+            Gate newGate = ChooseGate();
 
-            Console.WriteLine("Enter what you want to change Time - 1, FlNumber - 2, Town - 3, Company - 4, Terminal - 5, FlStatus - 6, Gate - 7");
+            var temp = flyingList.ToArray()[i];
+            temp.Gate = newGate;
 
-            try
-            {
-                int findNumber = int.Parse(Console.ReadLine());
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                if (choiseOperations.ContainsKey(findNumber))
-                {
-                    choiseOperations[findNumber](flyingList);
-                }
-            }
-            catch (Exception)
-            {
-                Emergency.EmergencySituation();
-            }
+            ShowOneFlight(flyingList, i);
         }
 
-        //  method for changing Gate in element of the List
-        private static void ChangeFlightGate(List<Flights> flyingList)
+        private static void ChangeFlightFlStatus(List<Flights> flyingList, int i)
         {
-            Console.WriteLine("Enter Gate ");
-            Gate enterGate = (Gate)Enum.Parse(typeof(Gate), Console.ReadLine());
+            FlStatus newFlStatus = ChooseFlStatusArrival();
 
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-                if (flyingList[i].Gate == enterGate)
-                {
-                    Gate newGate = ChooseGate();
+            var temp = flyingList.ToArray()[i];
+            temp.FlStatus = newFlStatus;
 
-                    var temp = flyingList.ToArray()[i];
-                    temp.Gate = newGate;
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
-
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
+            ShowOneFlight(flyingList, i);
         }
 
-        //  method for changing FlStatus in element of the List
-        private static void ChangeFlightFlStatus(List<Flights> flyingList)
+        private static void ChangeFlightTerminal(List<Flights> flyingList, int i)
         {
-            Console.WriteLine("Enter FlStatus ");
-            FlStatus enterFlStatus = (FlStatus)Enum.Parse(typeof(FlStatus), Console.ReadLine());
 
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-                if (flyingList[i].FlStatus == enterFlStatus)
-                {
-                    FlStatus newFlStatus = ChooseFlStatusArrival();
+            Terminal newTerminal = ChooseTerminal();
 
-                    var temp = flyingList.ToArray()[i];
-                    temp.FlStatus = newFlStatus;
+            var temp = flyingList.ToArray()[i];
+            temp.Terminal = newTerminal;
 
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
+            ShowOneFlight(flyingList, i);
+
         }
 
-        //  method for changing Terminal in element of the List
-        private static void ChangeFlightTerminal(List<Flights> flyingList)
+        private static void ChangeFlightCompany(List<Flights> flyingList, int i)
         {
-            Console.WriteLine("Enter Terminal ");
-            Terminal enterTerminal = (Terminal)Enum.Parse(typeof(Terminal), Console.ReadLine());
+            Console.WriteLine("Enter new Company ");
+            string enterNewCompany = Console.ReadLine().ToUpper();
 
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-                if (flyingList[i].Terminal == enterTerminal)
-                {
-                    Terminal newTerminal = ChooseTerminal();
+            var temp = flyingList.ToArray()[i];
+            temp.Town = enterNewCompany;
 
-                    var temp = flyingList.ToArray()[i];
-                    temp.Terminal = newTerminal;
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
-
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
+            ShowOneFlight(flyingList, i);
         }
 
-        //  method for changing Company in element of the List
-        private static void ChangeFlightCompany(List<Flights> flyingList)
+        private static void ChangeFlightTown(List<Flights> flyingList, int i)
         {
-            Console.WriteLine("Enter Company ");
-            string enterCompany = Console.ReadLine().ToUpper();
+            Console.WriteLine("Enter new Town ");
+            string enterNewTown = Console.ReadLine().ToUpper();
 
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-                if (flyingList[i].Company == enterCompany)
-                {
-                    Console.WriteLine("Enter new Company ");
-                    string enterNewCompany = Console.ReadLine().ToUpper();
+            var temp = flyingList.ToArray()[i];
+            temp.Town = enterNewTown;
 
-                    var temp = flyingList.ToArray()[i];
-                    temp.Town = enterNewCompany;
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
-
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
+            ShowOneFlight(flyingList, i);
         }
 
-        //  method for changing Town in element of the List
-        private static void ChangeFlightTown(List<Flights> flyingList)
+        private static void ChangeFlightFlNumber(List<Flights> flyingList, int i)
         {
-            Console.WriteLine("Enter Town ");
-            string enterTown = Console.ReadLine().ToUpper();
+            Console.WriteLine("Enter new FlNumber ");
+            string enterNewFlNumber = Console.ReadLine().ToUpper();
 
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-                if (flyingList[i].Town == enterTown)
-                {
-                    Console.WriteLine("Enter new Town ");
-                    string enterNewTown = Console.ReadLine().ToUpper();
+            var temp = flyingList.ToArray()[i];
+            temp.FlNumber = enterNewFlNumber;
 
-                    var temp = flyingList.ToArray()[i];
-                    temp.Town = enterNewTown;
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
-
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
+            ShowOneFlight(flyingList, i);
         }
 
-        //  method for changing FlNumber in element of the List
-        private static void ChangeFlightFlNumber(List<Flights> flyingList)
+        private static void ChangeFlightTime(List<Flights> flyingList, int i)
         {
-            Console.WriteLine("Enter a editable FlNumber ");
-            string enterFlNumber = Console.ReadLine().ToUpper();
+            Console.WriteLine("Enter new time in format yyyy-MM-dd HH:mm");
+            DateTime enterTimeNew = DateTime.Parse(Console.ReadLine());
 
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
+            var temp = flyingList.ToArray()[i];
+            temp.Time = enterTimeNew;
 
-                if (flyingList[i].FlNumber == enterFlNumber)
-                {
-                    Console.WriteLine("Enter new FlNumber ");
-                    string enterNewFlNumber = Console.ReadLine().ToUpper();
+            flyingList.RemoveAt(i);
+            flyingList.Insert(i, temp);
 
-                    var temp = flyingList.ToArray()[i];
-                    temp.FlNumber = enterNewFlNumber;
-
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
-
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
-        }
-
-        //  method for changing Time in element of the List
-        private static void ChangeFlightTime(List<Flights> flyingList)
-        {
-            Console.WriteLine("Enter a editable time in format yyyy-MM-dd HH:mm");
-            DateTime enterTime = DateTime.Parse(Console.ReadLine());
-
-            bool notFind = true;
-            for (int i = 0; i < flyingList.Count; i++)
-            {
-
-                if (flyingList[i].Time == enterTime)
-                {
-                    Console.WriteLine("Enter new time in format yyyy-MM-dd HH:mm");
-                    DateTime enterTimeNew = DateTime.Parse(Console.ReadLine());
-
-                    var temp = flyingList.ToArray()[i];
-                    temp.Time = enterTime;
-
-                    flyingList.RemoveAt(i);
-                    flyingList.Insert(i, temp);
-
-                    ShowOneFlight(flyingList, i);
-                    notFind = false;
-                }
-
-                if (notFind)
-                {
-                    Console.WriteLine("Flights meet these criteria are not found");
-                }
-            }
+            ShowOneFlight(flyingList, i);
         }
 
         //method for find nearest flights
@@ -733,4 +617,3 @@ namespace AirlineInfo
         }
     }
 }
-

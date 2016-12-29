@@ -15,12 +15,9 @@ namespace AirlineInfo
         public string Company { get; set; }
         public Terminal Terminal { get; set; }
         public FlStatus FlStatus { get; set; }
-        public Gate Gate { get; set; }
-        public Passenger[] Passengers { get; set; }
+        public Gate Gate { get; set; }        
         public int AircraftCapacity { get; set; }
-        public Ticket[] Tickets { get; set; }
-        
-
+        public Ticket[] Tickets { get; set; }      
     }
     
 }
